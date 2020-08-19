@@ -1,5 +1,4 @@
-import express from 'express'
-const router = express.Router() // instead of app.get, we use router.get
+import { Router } from 'express'
 import passport from 'passport'
 import { checkAuthAdmin } from '../middleware/checkAuth/chech-auth-admin'
 
@@ -14,26 +13,34 @@ import {
   userAuthLocal,
   userAuthGoogleRedirect,
   userAuthFacebookRedirect,
+  registerUser,
 } from '../controllers/userController'
 
-router.get('/getallusers', checkAuthAdmin, userGetAllUsers)
-router.put('/updateroles/:id', checkAuthAdmin, userUpdateRoles)
-router.delete('/deleteuser/:id', checkAuthAdmin, userDeleteUser)
-router.post('/resetuserpassword', userPostResetPassword)
-router.post('/resetuseremailpassword/:token', userPostResetEmailPassword)
-router.get('/logout', userGetLogout)
+export const userRoute = Router()
+
+userRoute.get('/getallusers', checkAuthAdmin, userGetAllUsers)
+userRoute.put('/updateroles/:id', checkAuthAdmin, userUpdateRoles)
+userRoute.delete('/deleteuser/:id', checkAuthAdmin, userDeleteUser)
+userRoute.post('/resetuserpassword', userPostResetPassword)
+userRoute.post('/resetuseremailpassword/:token', userPostResetEmailPassword)
+userRoute.get('/logout', userGetLogout)
+userRoute.post('/register', registerUser)
 
 // Local
-router.post('/auth/local', userAuthLocal)
+userRoute.post('/auth/local', userAuthLocal)
 
-router.get('/auth/credentials', getUserCredentials)
+userRoute.get('/auth/credentials', getUserCredentials)
 
 // Google
-router.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }))
-router.get('/auth/google/redirect', passport.authenticate('google', { failureRedirect: '/?auth-info=fail' }), userAuthGoogleRedirect)
+userRoute.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }))
+userRoute.get('/auth/google/redirect', passport.authenticate('google', { failureRedirect: '/?auth-info=fail' }), userAuthGoogleRedirect)
 
 // Facebook
-router.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }))
-router.get('/auth/facebook/redirect', passport.authenticate('facebook', { failureRedirect: '/?auth-info=fail' }), userAuthFacebookRedirect)
+userRoute.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }))
+userRoute.get(
+  '/auth/facebook/redirect',
+  passport.authenticate('facebook', { failureRedirect: '/?auth-info=fail' }),
+  userAuthFacebookRedirect
+)
 
-module.exports = router
+// module.exports = router

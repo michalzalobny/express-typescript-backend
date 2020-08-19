@@ -1,17 +1,13 @@
-import { RolesTypes } from '../../sharedTypes'
-import type { Response, NextFunction } from 'express'
-
-import { IUserSchema } from 'src/models/UserSchema'
-
-interface RequestWithUser extends Request {
-  user?: IUserSchema
-}
-
-export const checkAuthAdmin = (req: RequestWithUser, res: Response, next: NextFunction) => {
-  const userRoles = req.user.roles
-
-  if (userRoles.some((role) => role.match(/(admin)/))) {
-    next()
+import type { RequestHandler } from 'express'
+import { UserSchemaType } from '../../models/UserSchema'
+export const checkAuthAdmin: RequestHandler = (req, res, next) => {
+  if (req.user) {
+    const userRoles = req.user as UserSchemaType
+    if (userRoles.roles.some((role) => role.match(/(admin)/))) {
+      next()
+    } else {
+      res.status(400).send()
+    }
   } else {
     res.status(400).send()
   }

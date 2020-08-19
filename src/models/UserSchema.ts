@@ -1,14 +1,14 @@
-import mongoose, { Schema, Document } from 'mongoose'
-import { RolesTypes } from '../sharedTypes'
+import mongoose, { Schema } from 'mongoose'
+import { RolesTypes } from '../../types/sharedTypes'
 
-export interface IUserSchema extends Document {
+export type UserSchemaType = mongoose.Document & {
   _id: string
   name: string
   email: string
   resetToken?: string
-  resetTokenExpiration?: number
+  resetTokenExpiration?: number | { $gt: number }
   password: string
-  loginStrategy: string
+  loginStrategy: 'local' | 'facebook' | 'google'
   date: Date
   roles: RolesTypes[]
 }
@@ -45,4 +45,4 @@ const UserSchema: Schema = new Schema({
   },
   roles: [{ type: String }],
 })
-export default mongoose.model<IUserSchema>('UserSchema', UserSchema)
+export default mongoose.model<UserSchemaType>('UserSchema', UserSchema)

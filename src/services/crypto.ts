@@ -4,7 +4,7 @@ type Props = {
   cryptoRounds: number
 }
 
-export const generateCryptoToken = async ({ cryptoRounds }: Props) => {
+export const generateCryptoToken = async ({ cryptoRounds }: Props): Promise<string> => {
   return new Promise((resolve, reject) => {
     crypto.randomBytes(cryptoRounds, (error, buffer) => {
       if (!error) {
