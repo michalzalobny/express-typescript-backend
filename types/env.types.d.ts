@@ -2,7 +2,6 @@ declare namespace NodeJS {
   export interface ProcessEnv {
     DATABASE_USER: string
     DATABASE_PASSWORD: string
-
     COOKIE_SECRET: string
 
     MAIL_HOST: string
