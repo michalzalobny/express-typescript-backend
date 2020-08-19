@@ -23,7 +23,7 @@ type CreateNewUserType = {
 
 export const createNewUser = async ({ id, name, email, password, userRoles, loginStrategy }: CreateNewUserType) => {
   try {
-    const hashedPassword = await bcryptGenerate({ hashObject: password, rounds: 10 })
+    const hashedPassword = await bcryptGenerate({ hashObject: password })
     const newUser = new User({
       _id: id,
       name,
