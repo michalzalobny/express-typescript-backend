@@ -12,8 +12,9 @@ import { localStrategy } from './services/passportConfig/localStrategy'
 import { facebookStrategy } from './services/passportConfig/facebookStrategy'
 import { googleStrategy } from './services/passportConfig/googleStrategy'
 import User, { UserSchemaType } from './models/UserSchema'
+import { getConfigVar } from './services/getConfigVar'
 
-const PORT = process.env.NEXT_PUBLIC_APP_PORT_BACK
+const PORT = getConfigVar('NEXT_PUBLIC_APP_PORT_BACK')
 
 // DB CONFIG
 import { db } from './config/database'
@@ -40,20 +41,6 @@ mongoose
   .then(() => console.log('MongoDB Connected...'))
   .catch(() => console.log('Cannot connect to database...'))
 
-// Passport
-passport.serializeUser((user: UserSchemaType, done) => {
-  done(undefined, user)
-})
-
-passport.deserializeUser(async (user: UserSchemaType, done) => {
-  try {
-    const foundUser = await User.findOne({ email: user.email })
-    done(undefined, foundUser)
-  } catch (error) {
-    done(undefined, false)
-  }
-})
-
 const app = express()
 
 passport.use(localStrategy)
@@ -72,13 +59,13 @@ app.use(cookieParser())
 // Session setup that Renews with every checkAuth
 app.use(
   session({
-    secret: process.env.COOKIE_SECRET as string,
+    secret: getConfigVar('COOKIE_SECRET'),
     saveUninitialized: false,
     resave: true,
     rolling: true,
     store,
     cookie: {
-      maxAge: Number(process.env.APP_EXPIRATION_TIME),
+      maxAge: Number(getConfigVar('APP_EXPIRATION_TIME')),
       sameSite: 'lax',
       // secure:true
     },
@@ -87,6 +74,23 @@ app.use(
 
 app.use(passport.initialize())
 app.use(passport.session())
+
+// Passport
+passport.serializeUser<UserSchemaType, string>((user, done) => {
+  done(undefined, user._id)
+})
+
+passport.deserializeUser<UserSchemaType, string>(async (userId, done) => {
+  try {
+    const user = await User.findOne({ _id: userId })
+    if (!user) {
+      return done(new Error('User not found'))
+    }
+    done(undefined, user)
+  } catch (e) {
+    done(e)
+  }
+})
 
 // Use imported at the beggining Routes (important at client side)
 app.use('/api/user', userRoute)

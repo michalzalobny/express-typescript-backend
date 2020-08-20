@@ -4,6 +4,7 @@ import { sendMail } from '../services/nodemailer'
 import { generateCryptoToken } from '../services/crypto'
 import type { RequestHandler } from 'express'
 import { findUserBy, createNewUser } from '../services/userService'
+import { getConfigVar } from '../services/getConfigVar'
 
 import User, { UserSchemaType } from '../models/UserSchema'
 
@@ -29,7 +30,7 @@ export const userPostResetEmailPassword: RequestHandler = async (req, res) => {
 
 export const userPostResetPassword: RequestHandler = async (req, res) => {
   try {
-    const token = await generateCryptoToken({ cryptoRounds: 32 })
+    const token = await generateCryptoToken()
     const user = await findUserBy({ email: req.body.resetUserPasswordDataEmail })
     if (user) {
       if (user.loginStrategy === 'local') {
@@ -37,9 +38,11 @@ export const userPostResetPassword: RequestHandler = async (req, res) => {
         user.resetTokenExpiration = Date.now() + 1000 * 60 * 60 // 1hr
         await user.save()
         await sendMail({
-          emailContent: ` <p>${req.body.emailData1}</p> <p>${req.body.emailData2}</p> <strong><a href="${process.env.NEXT_PUBLIC_APP_PATH}user/reset/password/${token}">${req.body.emailData3}</a></strong> `,
+          emailContent: ` <p>${req.body.emailData1}</p> <p>${req.body.emailData2}</p> <strong><a href="${getConfigVar(
+            'NEXT_PUBLIC_APP_PATH'
+          )}user/reset/password/${token}">${req.body.emailData3}</a></strong> `,
           emailTo: req.body.resetUserPasswordDataEmail,
-          emailFrom: <string>process.env.MAIL_USER,
+          emailFrom: getConfigVar('MAIL_USER'),
           emailSubject: `${req.body.emailDataSubject}`,
         })
         res.status(200).send()
@@ -72,8 +75,7 @@ export const userUpdateRoles: RequestHandler = async (req, res) => {
 export const registerUser: RequestHandler = async (req, res) => {
   try {
     const { name, email, password } = req.body
-    const id = await generateCryptoToken({ cryptoRounds: 32 })
-    await createNewUser({ id, name, email, password, userRoles: ['user'], loginStrategy: 'local' })
+    await createNewUser({ name, email, password, userRoles: ['user'], loginStrategy: 'local' })
     res.status(200).send()
   } catch {
     res.status(400).send()
@@ -113,12 +115,14 @@ export const userAuthFacebookRedirect: RequestHandler = (req, res) => {
 
 export const userAuthLocal: RequestHandler = (req, res, next) => {
   passport.authenticate('local', (error, user) => {
+    console.log(user)
     req.logIn(user, (loginError) => {
       if (loginError) {
         res.status(400).send({ action: error })
       } else {
         const requestUser = req.user as UserSchemaType
-        res.status(200).send({ roles: requestUser.roles, expiresIn: process.env.APP_EXPIRATION_TIME })
+
+        res.status(200).send({ roles: requestUser.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
       }
     })
   })(req, res, next)
@@ -127,7 +131,7 @@ export const userAuthLocal: RequestHandler = (req, res, next) => {
 export const getUserCredentials: RequestHandler = (req, res) => {
   const requestUser = req.user as UserSchemaType
   if (requestUser) {
-    res.status(200).send({ roles: requestUser.roles, expiresIn: process.env.APP_EXPIRATION_TIME })
+    res.status(200).send({ roles: requestUser.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
   } else {
     res.status(400).send()
   }

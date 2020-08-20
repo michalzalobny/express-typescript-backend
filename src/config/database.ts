@@ -1,3 +1,7 @@
+import { getConfigVar } from '../services/getConfigVar'
+
 export const db = {
-  mongoURI: `mongodb://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@mongo46.mydevil.net/${process.env.DATABASE_USER}`,
+  mongoURI: `mongodb://${getConfigVar('DATABASE_USER')}:${getConfigVar('DATABASE_PASSWORD')}@mongo46.mydevil.net/${getConfigVar(
+    'DATABASE_USER'
+  )}`,
 }

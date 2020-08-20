@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer'
 import smtpTransport from 'nodemailer-smtp-transport'
+import { getConfigVar } from './getConfigVar'
 
 type SendMailProps = {
   emailContent: string
@@ -10,12 +11,12 @@ type SendMailProps = {
 
 const transporter = nodemailer.createTransport(
   smtpTransport({
-    host: process.env.MAIL_HOST,
+    host: getConfigVar('MAIL_HOST'),
     // secureConnection: true,
     port: 587,
     auth: {
-      user: process.env.MAIL_USER, // taken from Poczta > Nazwa domeny > Szczegóły > zmiana hasła > i dajemy to co tam jest z emailem + hasło nowe
-      pass: process.env.MAIL_PASSWORD,
+      user: getConfigVar('MAIL_USER'), // taken from Poczta > Nazwa domeny > Szczegóły > zmiana hasła > i dajemy to co tam jest z emailem + hasło nowe
+      pass: getConfigVar('MAIL_PASSWORD'),
     },
   })
 )

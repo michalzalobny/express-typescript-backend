@@ -1,7 +1,7 @@
 import User, { UserSchemaType } from '../models/UserSchema'
 import bcrypt from 'bcryptjs'
 import { bcryptGenerate } from './bcrypt'
-import { localStrategy } from './passportConfig/localStrategy'
+import { generateCryptoToken } from './crypto'
 
 export const findUserBy = async (where: Partial<UserSchemaType>): Promise<UserSchemaType | null> => {
   const existingUser = await User.findOne(where)
@@ -18,11 +18,11 @@ type CreateNewUserType = {
   name: string
   email: string
   password: string
-  id: string
 }
 
-export const createNewUser = async ({ id, name, email, password, userRoles, loginStrategy }: CreateNewUserType) => {
+export const createNewUser = async ({ name, email, password, userRoles, loginStrategy }: CreateNewUserType) => {
   try {
+    const id = await generateCryptoToken()
     const hashedPassword = await bcryptGenerate({ hashObject: password })
     const newUser = new User({
       _id: id,

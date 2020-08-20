@@ -10,7 +10,11 @@ export const localStrategy = new LocalStrategy({ passReqToCallback: true }, asyn
       return done('shouldRegister', false)
     } else {
       const { message, user } = await tryLoggingIn({ password, loginStrategy: 'local', foundUser })
-      return done(message, user)
+      if (user) {
+        return done(message, user)
+      } else {
+        return done(message, false)
+      }
     }
   } catch {
     done(undefined, false)
