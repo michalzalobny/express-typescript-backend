@@ -10,7 +10,7 @@ export const googleStrategy = new GoogleStrategy(
     clientSecret: getConfigVar('GOOGLE_CLIENT_SECRET'),
     callbackURL: `${getConfigVar('NEXT_PUBLIC_APP_PATH')}api/user/auth/google/redirect`,
   },
-  async (accessToken, refreshToken, profile, done) => {
+  async (_accessToken, _refreshToken, profile, done) => {
     if (profile.emails && profile.displayName) {
       const foundUser = await findUserBy({ email: profile.emails[0].value })
       if (!foundUser) {

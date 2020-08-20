@@ -11,7 +11,7 @@ export const facebookStrategy = new FacebookStrategy(
     callbackURL: `${getConfigVar('NEXT_PUBLIC_APP_PATH')}api/user/auth/facebook/redirect`,
     profileFields: ['id', 'emails', 'name'],
   },
-  async (accessToken, refreshToken, profile, done) => {
+  async (_accessToken, _refreshToken, profile, done) => {
     if (profile.emails && profile.name) {
       const foundUser = await findUserBy({ email: profile.emails[0].value })
       if (!foundUser) {

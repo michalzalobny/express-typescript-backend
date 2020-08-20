@@ -82,7 +82,7 @@ export const registerUser: RequestHandler = async (req, res) => {
   }
 }
 
-export const userGetAllUsers: RequestHandler = async (req, res) => {
+export const userGetAllUsers: RequestHandler = async (_req, res) => {
   try {
     const users = await User.find({}).sort({ date: 'desc' })
     const usersToSend = users.map(({ name, email, roles, _id }) => ({ name, email, roles, _id }))
@@ -105,33 +105,37 @@ export const userDeleteUser: RequestHandler = async (req, res) => {
   }
 }
 
-export const userAuthGoogleRedirect: RequestHandler = (req, res) => {
+export const userAuthGoogleRedirect: RequestHandler = (_req, res) => {
   res.redirect('/')
 }
 
-export const userAuthFacebookRedirect: RequestHandler = (req, res) => {
+export const userAuthFacebookRedirect: RequestHandler = (_req, res) => {
   res.redirect('/')
 }
 
 export const userAuthLocal: RequestHandler = (req, res, next) => {
   passport.authenticate('local', (error, user) => {
-    console.log(user)
+    if (!user) return res.status(400).send({ action: error })
     req.logIn(user, (loginError) => {
       if (loginError) {
         res.status(400).send({ action: error })
       } else {
-        const requestUser = req.user as UserSchemaType
-
-        res.status(200).send({ roles: requestUser.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
+        res.status(200).send({ roles: user.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
       }
     })
+    return res.status(400).send({ action: error })
   })(req, res, next)
 }
 
+declare global {
+  namespace Express {
+    interface User extends UserSchemaType {}
+  }
+}
+
 export const getUserCredentials: RequestHandler = (req, res) => {
-  const requestUser = req.user as UserSchemaType
-  if (requestUser) {
-    res.status(200).send({ roles: requestUser.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
+  if (req.user) {
+    res.status(200).send({ roles: req.user.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
   } else {
     res.status(400).send()
   }

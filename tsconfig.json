@@ -1,18 +1,23 @@
 {
   "compilerOptions": {
+    "target": "ES2019",
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es6",
-    "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "strict": true,
-    "outDir": "build",
-    "baseUrl": "src",
-    "paths": {
-      "*": ["node_modules/*"],
-      "src/*": ["./*"]
-    }
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedParameters": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "allowSyntheticDefaultImports": true,
+    "strictNullChecks": true
   },
-  "include": ["./src/**/*", "./types/**/*"]
+  "lib": ["ES2019"],
+  "exclude": ["dist"]
 }
