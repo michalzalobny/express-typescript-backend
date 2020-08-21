@@ -3,6 +3,15 @@ import bcrypt from 'bcryptjs'
 import { bcryptGenerate } from './bcrypt'
 import { generateCryptoToken } from './crypto'
 
+export const deleteUserBy = async (where: Partial<UserSchemaType>): Promise<number> => {
+  const { deletedCount } = await User.deleteOne(where)
+  if (deletedCount !== 1) {
+    throw new Error()
+  } else {
+    return deletedCount
+  }
+}
+
 export const findUserBy = async (where: Partial<UserSchemaType>): Promise<UserSchemaType | null> => {
   const existingUser = await User.findOne(where)
   if (existingUser) {
@@ -10,6 +19,10 @@ export const findUserBy = async (where: Partial<UserSchemaType>): Promise<UserSc
   } else {
     return null
   }
+}
+
+export const findAllUsers = async () => {
+  return await User.find({}).sort({ date: 'desc' })
 }
 
 type CreateNewUserType = {
@@ -64,6 +77,14 @@ export const tryLoggingIn = async ({ password, loginStrategy, foundUser }: TryLo
   }
 }
 
-export const saveUser = async (user: UserSchemaType) => {
+type SaveUserType = {
+  user: UserSchemaType
+}
+
+export const saveUser = async ({ user }: SaveUserType) => {
   return await user.save()
+}
+
+export const generateTokenExpirationTime = () => {
+  return Date.now() + 1000 * 60 * 60 // 1hr
 }

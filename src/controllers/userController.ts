@@ -3,10 +3,16 @@ import passport from 'passport'
 import { sendMail } from '../services/nodemailer'
 import { generateCryptoToken } from '../services/crypto'
 import type { RequestHandler } from 'express'
-import { findUserBy, createNewUser, saveUser } from '../services/userService'
+import { findUserBy, createNewUser, saveUser, generateTokenExpirationTime, findAllUsers, deleteUserBy } from '../services/userService'
 import { getConfigVar } from '../services/getConfigVar'
+import { bcryptGenerate } from '../services/bcrypt'
+import { UserSchemaType } from '../models/UserSchema'
 
-import User, { UserSchemaType } from '../models/UserSchema'
+declare global {
+  namespace Express {
+    interface User extends UserSchemaType {}
+  }
+}
 
 export const userPostResetEmailPassword: RequestHandler = async (req, res) => {
   try {
@@ -14,11 +20,11 @@ export const userPostResetEmailPassword: RequestHandler = async (req, res) => {
     const newPassword = req.body.resetUserEmailPasswordDataPassword
     const user = await findUserBy({ resetToken: token, resetTokenExpiration: { $gt: Date.now() } })
     if (user) {
-      const hashedPassword = await bcrypt.hash(newPassword, 10)
+      const hashedPassword = await bcryptGenerate({ hashObject: newPassword })
       user.password = hashedPassword
       user.resetToken = undefined
       user.resetTokenExpiration = undefined
-      await saveUser(user)
+      await saveUser({ user })
       res.status(200).send()
     } else {
       throw new Error('User not found')
@@ -35,8 +41,8 @@ export const userPostResetPassword: RequestHandler = async (req, res) => {
     if (user) {
       if (user.loginStrategy === 'local') {
         user.resetToken = token
-        user.resetTokenExpiration = Date.now() + 1000 * 60 * 60 // 1hr
-        await user.save()
+        user.resetTokenExpiration = generateTokenExpirationTime()
+        await saveUser({ user })
         await sendMail({
           emailContent: ` <p>${req.body.emailData1}</p> <p>${req.body.emailData2}</p> <strong><a href="${getConfigVar(
             'NEXT_PUBLIC_APP_PATH'
@@ -62,7 +68,7 @@ export const userUpdateRoles: RequestHandler = async (req, res) => {
     const user = await findUserBy({ _id: req.params.id })
     if (user) {
       user.roles = req.body
-      await user.save()
+      await saveUser({ user })
       res.status(200).send()
     } else {
       throw new Error('User not found')
@@ -84,22 +90,18 @@ export const registerUser: RequestHandler = async (req, res) => {
 
 export const userGetAllUsers: RequestHandler = async (_req, res) => {
   try {
-    const users = await User.find({}).sort({ date: 'desc' })
+    const users = await findAllUsers()
     const usersToSend = users.map(({ name, email, roles, _id }) => ({ name, email, roles, _id }))
     res.status(200).send(usersToSend)
-  } catch (error) {
+  } catch {
     res.status(400).send()
   }
 }
 
 export const userDeleteUser: RequestHandler = async (req, res) => {
   try {
-    const { deletedCount } = await User.deleteOne({ _id: req.params.id })
-    if (deletedCount === 1) {
-      res.status(200).send()
-    } else {
-      throw new Error()
-    }
+    await deleteUserBy({ _id: req.params.id })
+    res.status(200).send()
   } catch (error) {
     res.status(400).send()
   }
@@ -115,12 +117,6 @@ export const userAuthLocal: RequestHandler = (req, res, next) => {
       }
     })
   })(req, res, next)
-}
-
-declare global {
-  namespace Express {
-    interface User extends UserSchemaType {}
-  }
 }
 
 export const getUserCredentials: RequestHandler = (req, res) => {
