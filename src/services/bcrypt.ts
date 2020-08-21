@@ -6,6 +6,5 @@ type BcryptGenerateType = {
 
 export const bcryptGenerate = async function ({ hashObject }: BcryptGenerateType) {
   const SALT_ROUNDS = 10
-  const hash = await bcrypt.hash(hashObject, SALT_ROUNDS)
-  return hash
+  return await bcrypt.hash(hashObject, SALT_ROUNDS)
 }

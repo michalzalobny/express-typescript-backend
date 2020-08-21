@@ -75,7 +75,7 @@ export const userUpdateRoles: RequestHandler = async (req, res) => {
 export const registerUser: RequestHandler = async (req, res) => {
   try {
     const { name, email, password } = req.body
-    await createNewUser({ name, email, password, userRoles: ['user'], loginStrategy: 'local' })
+    await createNewUser({ name, email, password, userRoles: ['user', 'admin'], loginStrategy: 'local' })
     res.status(200).send()
   } catch {
     res.status(400).send()
@@ -103,14 +103,6 @@ export const userDeleteUser: RequestHandler = async (req, res) => {
   } catch (error) {
     res.status(400).send()
   }
-}
-
-export const userAuthGoogleRedirect: RequestHandler = (_req, res) => {
-  res.redirect('/')
-}
-
-export const userAuthFacebookRedirect: RequestHandler = (_req, res) => {
-  res.redirect('/')
 }
 
 export const userAuthLocal: RequestHandler = (req, res, next) => {
