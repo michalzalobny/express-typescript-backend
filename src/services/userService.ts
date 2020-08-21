@@ -59,6 +59,11 @@ export const tryLoggingIn = async ({ password, loginStrategy, foundUser }: TryLo
     } else {
       return { message: 'wrongPassword', user: undefined }
     }
+  } else {
+    return { user: undefined, message: 'differentStrategy' }
   }
-  return { user: undefined, message: undefined }
+}
+
+export const saveUser = async (user: UserSchemaType) => {
+  return await user.save()
 }

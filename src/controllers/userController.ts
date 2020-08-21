@@ -3,7 +3,7 @@ import passport from 'passport'
 import { sendMail } from '../services/nodemailer'
 import { generateCryptoToken } from '../services/crypto'
 import type { RequestHandler } from 'express'
-import { findUserBy, createNewUser } from '../services/userService'
+import { findUserBy, createNewUser, saveUser } from '../services/userService'
 import { getConfigVar } from '../services/getConfigVar'
 
 import User, { UserSchemaType } from '../models/UserSchema'
@@ -18,10 +18,10 @@ export const userPostResetEmailPassword: RequestHandler = async (req, res) => {
       user.password = hashedPassword
       user.resetToken = undefined
       user.resetTokenExpiration = undefined
-      await user.save()
+      await saveUser(user)
       res.status(200).send()
     } else {
-      throw new Error()
+      throw new Error('User not found')
     }
   } catch {
     res.status(400).send()
@@ -47,10 +47,10 @@ export const userPostResetPassword: RequestHandler = async (req, res) => {
         })
         res.status(200).send()
       } else {
-        throw new Error()
+        throw new Error('Wrong login strategy')
       }
     } else {
-      throw new Error()
+      throw new Error('User not found')
     }
   } catch {
     res.status(400).send()
@@ -65,7 +65,7 @@ export const userUpdateRoles: RequestHandler = async (req, res) => {
       await user.save()
       res.status(200).send()
     } else {
-      throw new Error()
+      throw new Error('User not found')
     }
   } catch {
     res.status(400).send()
@@ -107,15 +107,13 @@ export const userDeleteUser: RequestHandler = async (req, res) => {
 
 export const userAuthLocal: RequestHandler = (req, res, next) => {
   passport.authenticate('local', (error, user) => {
-    if (!user) return res.status(400).send({ action: error })
     req.logIn(user, (loginError) => {
       if (loginError) {
-        res.status(400).send({ action: error })
+        res.status(400).json({ action: error })
       } else {
-        res.status(200).send({ roles: user.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
+        res.status(200).json({ roles: user.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
       }
     })
-    return res.status(400).send({ action: error })
   })(req, res, next)
 }
 
