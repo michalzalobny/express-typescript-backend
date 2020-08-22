@@ -3,12 +3,24 @@ import dotenv from 'dotenv'
 dotenv.config()
 import { findUserBy, createNewUser, tryLoggingIn } from '../userService'
 import { getConfigVar } from '../getConfigVar'
+import { UserSchemaType } from '../../models/UserSchema'
+import type { Handler } from 'express'
+declare module 'passport' {
+  interface Authenticator<
+    InitializeRet = Handler,
+    AuthenticateRet = any,
+    AuthorizeRet = AuthenticateRet,
+    AuthorizeOptions = AuthenticateOptions
+  > {
+    authenticate(strategy: 'google', callback: (error: Error, user: UserSchemaType) => void): AuthenticateRet
+  }
+}
 
 export const googleStrategy = new GoogleStrategy(
   {
     clientID: getConfigVar('GOOGLE_CLIENT_ID'),
     clientSecret: getConfigVar('GOOGLE_CLIENT_SECRET'),
-    callbackURL: `${getConfigVar('NEXT_PUBLIC_APP_PATH')}api/user/auth/google/redirect`,
+    callbackURL: `${getConfigVar('NEXT_PUBLIC_APP_PATH')}api/user/auth/google/callback`,
   },
   async (_accessToken, _refreshToken, profile, done) => {
     if (profile.emails && profile.displayName) {
@@ -28,7 +40,7 @@ export const googleStrategy = new GoogleStrategy(
         if (user) {
           return done(message, user)
         } else {
-          done(undefined, false)
+          done(message, false)
         }
       }
     } else {

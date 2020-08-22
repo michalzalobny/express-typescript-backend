@@ -1,4 +1,3 @@
-import bcrypt from 'bcryptjs'
 import passport from 'passport'
 import { sendMail } from '../services/nodemailer'
 import { generateCryptoToken } from '../services/crypto'
@@ -106,6 +105,13 @@ export const userDeleteUser: RequestHandler = async (req, res) => {
     res.status(400).send()
   }
 }
+export const getUserCredentials: RequestHandler = (req, res, _next) => {
+  if (req.user) {
+    res.status(200).send({ roles: req.user.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
+  } else {
+    res.status(401).send()
+  }
+}
 
 export const userAuthLocal: RequestHandler = (req, res, next) => {
   passport.authenticate('local', (error, user) => {
@@ -113,18 +119,33 @@ export const userAuthLocal: RequestHandler = (req, res, next) => {
       if (loginError) {
         res.status(400).json({ action: error })
       } else {
-        res.status(200).json({ roles: user.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
+        getUserCredentials(req, res, next)
       }
     })
   })(req, res, next)
 }
 
-export const getUserCredentials: RequestHandler = (req, res) => {
-  if (req.user) {
-    res.status(200).send({ roles: req.user.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
-  } else {
-    res.status(400).send()
-  }
+export const userAuthGoogle: RequestHandler = (req, res, next) => {
+  passport.authenticate('google', (error, user) => {
+    req.logIn(user, (loginError) => {
+      if (loginError) {
+        res.redirect(`/?error=${error}`)
+      } else {
+        res.redirect(`/`)
+      }
+    })
+  })(req, res, next)
+}
+export const userAuthFacebook: RequestHandler = (req, res, next) => {
+  passport.authenticate('facebook', (error, user) => {
+    req.logIn(user, (loginError) => {
+      if (loginError) {
+        res.redirect(`/?error=${error}`)
+      } else {
+        res.redirect(`/`)
+      }
+    })
+  })(req, res, next)
 }
 
 export const userGetLogout: RequestHandler = (req, res) => {

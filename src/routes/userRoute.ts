@@ -12,6 +12,8 @@ import {
   getUserCredentials,
   userAuthLocal,
   registerUser,
+  userAuthGoogle,
+  userAuthFacebook,
 } from '../controllers/userController'
 
 export const userRoute = Router()
@@ -30,8 +32,8 @@ userRoute.post('/auth/local', userAuthLocal)
 
 // Google
 userRoute.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }))
-userRoute.get('/auth/google/redirect', passport.authenticate('google', { successRedirect: '/', failureRedirect: '/' }))
+userRoute.get('/auth/google/callback', userAuthGoogle)
 
 // Facebook
 userRoute.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }))
-userRoute.get('/auth/facebook/redirect', passport.authenticate('facebook', { successRedirect: '/', failureRedirect: '/' }))
+userRoute.get('/auth/facebook/callback', userAuthFacebook)
