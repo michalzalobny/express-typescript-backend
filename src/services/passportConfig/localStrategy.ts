@@ -3,7 +3,9 @@ import dotenv from 'dotenv'
 dotenv.config()
 import { tryLoggingIn, findUserBy } from '../userService'
 import { UserSchemaType } from '../../models/UserSchema'
+import { USER_SHOULD_REGISTER } from '../../constants/userMessages'
 import type { Handler } from 'express'
+import { PASSPORT_LOCAL } from '../../constants/passportStrategies'
 declare module 'passport' {
   interface Authenticator<
     InitializeRet = Handler,
@@ -11,7 +13,7 @@ declare module 'passport' {
     AuthorizeRet = AuthenticateRet,
     AuthorizeOptions = AuthenticateOptions
   > {
-    authenticate(strategy: 'local', callback: (error: Error, user: UserSchemaType) => void): AuthenticateRet
+    authenticate(strategy: typeof PASSPORT_LOCAL, callback: (error: Error, user: UserSchemaType) => void): AuthenticateRet
   }
 }
 
@@ -19,9 +21,9 @@ export const localStrategy = new LocalStrategy({ passReqToCallback: true }, asyn
   try {
     const foundUser = await findUserBy({ email })
     if (!foundUser) {
-      return done('shouldRegister', false)
+      return done(USER_SHOULD_REGISTER, false)
     } else {
-      const { message, user } = await tryLoggingIn({ password, loginStrategy: 'local', foundUser })
+      const { message, user } = await tryLoggingIn({ password, loginStrategy: PASSPORT_LOCAL, foundUser })
       if (user) {
         return done(message, user)
       } else {

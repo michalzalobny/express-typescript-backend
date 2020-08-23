@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose'
-import { RolesTypes } from '../../types/sharedTypes'
+import { RolesTypes, LoginStrategyType } from '../../types/sharedTypes'
 
 export type UserSchemaType = mongoose.Document & {
   _id: string
@@ -8,7 +8,7 @@ export type UserSchemaType = mongoose.Document & {
   resetToken?: string
   resetTokenExpiration?: number | { $gt: number }
   password: string
-  loginStrategy: 'local' | 'facebook' | 'google'
+  loginStrategy: LoginStrategyType
   date: Date
   roles: RolesTypes[]
 }

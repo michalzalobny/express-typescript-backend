@@ -2,7 +2,18 @@ import passport from 'passport'
 import { sendMail } from '../services/nodemailer'
 import { generateCryptoToken } from '../services/crypto'
 import type { RequestHandler } from 'express'
-import { findUserBy, createNewUser, saveUser, generateTokenExpirationTime, findAllUsers, deleteUserBy } from '../services/userService'
+import { USER_ALREADY_EXISTS } from '../constants/userMessages'
+import { PASSPORT_LOCAL, PASSPORT_FACEBOOK, PASSPORT_GOOGLE } from '../constants/passportStrategies'
+import {
+  findUserBy,
+  createNewUser,
+  saveUser,
+  generateTokenExpirationTime,
+  findAllUsers,
+  deleteUserBy,
+  failedLoginRedirect,
+  successLoginRedirect,
+} from '../services/userService'
 import { getConfigVar } from '../services/getConfigVar'
 import { bcryptGenerate } from '../services/bcrypt'
 import { UserSchemaType } from '../models/UserSchema'
@@ -38,7 +49,7 @@ export const userPostResetPassword: RequestHandler = async (req, res) => {
     const token = await generateCryptoToken()
     const user = await findUserBy({ email: req.body.resetUserPasswordDataEmail })
     if (user) {
-      if (user.loginStrategy === 'local') {
+      if (user.loginStrategy === PASSPORT_LOCAL) {
         user.resetToken = token
         user.resetTokenExpiration = generateTokenExpirationTime()
         await saveUser({ user })
@@ -80,8 +91,18 @@ export const userUpdateRoles: RequestHandler = async (req, res) => {
 export const registerUser: RequestHandler = async (req, res) => {
   try {
     const { name, email, password } = req.body
-    await createNewUser({ name, email, password, userRoles: ['user', 'admin'], loginStrategy: 'local' })
-    res.status(200).send()
+    const { userAlreadyExists } = await createNewUser({
+      name,
+      email,
+      password,
+      userRoles: ['user', 'admin'],
+      loginStrategy: PASSPORT_LOCAL,
+    })
+    if (!userAlreadyExists) {
+      res.status(200).send()
+    } else {
+      res.status(400).json({ message: USER_ALREADY_EXISTS })
+    }
   } catch {
     res.status(400).send()
   }
@@ -114,10 +135,10 @@ export const getUserCredentials: RequestHandler = (req, res, _next) => {
 }
 
 export const userAuthLocal: RequestHandler = (req, res, next) => {
-  passport.authenticate('local', (error, user) => {
+  passport.authenticate(PASSPORT_LOCAL, (error, user) => {
     req.logIn(user, (loginError) => {
       if (loginError) {
-        res.status(400).json({ action: error })
+        res.status(400).json({ message: error })
       } else {
         getUserCredentials(req, res, next)
       }
@@ -126,23 +147,23 @@ export const userAuthLocal: RequestHandler = (req, res, next) => {
 }
 
 export const userAuthGoogle: RequestHandler = (req, res, next) => {
-  passport.authenticate('google', (error, user) => {
+  passport.authenticate(PASSPORT_GOOGLE, (error, user) => {
     req.logIn(user, (loginError) => {
       if (loginError) {
-        res.redirect(`/?error=${error}`)
+        res.redirect(failedLoginRedirect(error))
       } else {
-        res.redirect(`/`)
+        res.redirect(successLoginRedirect())
       }
     })
   })(req, res, next)
 }
 export const userAuthFacebook: RequestHandler = (req, res, next) => {
-  passport.authenticate('facebook', (error, user) => {
+  passport.authenticate(PASSPORT_FACEBOOK, (error, user) => {
     req.logIn(user, (loginError) => {
       if (loginError) {
-        res.redirect(`/?error=${error}`)
+        res.redirect(failedLoginRedirect(error))
       } else {
-        res.redirect(`/`)
+        res.redirect(successLoginRedirect())
       }
     })
   })(req, res, next)

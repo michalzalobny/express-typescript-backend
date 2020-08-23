@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import passport from 'passport'
 import { checkAuth } from '../middleware/checkAuth/checkAuth'
-
+import { PASSPORT_GOOGLE, PASSPORT_FACEBOOK } from '../constants/passportStrategies'
 import {
   userGetAllUsers,
   userDeleteUser,
@@ -31,9 +31,9 @@ userRoute.get('/auth/credentials', getUserCredentials)
 userRoute.post('/auth/local', userAuthLocal)
 
 // Google
-userRoute.get('/auth/google', passport.authenticate('google', { scope: ['email', 'profile'] }))
+userRoute.get('/auth/google', passport.authenticate(PASSPORT_GOOGLE, { scope: ['email', 'profile'] }))
 userRoute.get('/auth/google/callback', userAuthGoogle)
 
 // Facebook
-userRoute.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }))
+userRoute.get('/auth/facebook', passport.authenticate(PASSPORT_FACEBOOK, { scope: ['email'] }))
 userRoute.get('/auth/facebook/callback', userAuthFacebook)

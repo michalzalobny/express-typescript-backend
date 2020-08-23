@@ -2,6 +2,7 @@ import User, { UserSchemaType } from '../models/UserSchema'
 import bcrypt from 'bcryptjs'
 import { bcryptGenerate } from './bcrypt'
 import { generateCryptoToken } from './crypto'
+import { WRONG_PASSWORD, USE_DIFFERENT_LOGIN_STRATEGY } from '../constants/userMessages'
 
 export const deleteUserBy = async (where: Partial<UserSchemaType>): Promise<number> => {
   const { deletedCount } = await User.deleteOne(where)
@@ -27,27 +28,32 @@ export const findAllUsers = async () => {
 
 type CreateNewUserType = {
   userRoles: UserSchemaType['roles']
-  loginStrategy: 'local' | 'google' | 'facebook'
-  name: string
-  email: string
-  password: string
+  loginStrategy: UserSchemaType['loginStrategy']
+  name: UserSchemaType['name']
+  email: UserSchemaType['email']
+  password: UserSchemaType['password']
 }
 
 export const createNewUser = async ({ name, email, password, userRoles, loginStrategy }: CreateNewUserType) => {
   try {
-    const id = await generateCryptoToken()
-    const hashedPassword = await bcryptGenerate({ hashObject: password })
-    const newUser = new User({
-      _id: id,
-      name,
-      email,
-      password: hashedPassword,
-      roles: userRoles,
-      loginStrategy,
-    })
-    const savedUser = await newUser.save()
-    if (savedUser) return savedUser
-    else throw new Error()
+    const foundUser = await findUserBy({ email })
+    if (foundUser) {
+      return { userAlreadyExists: true }
+    } else {
+      const id = await generateCryptoToken()
+      const hashedPassword = await bcryptGenerate({ hashObject: password })
+      const newUser = new User({
+        _id: id,
+        name,
+        email,
+        password: hashedPassword,
+        roles: userRoles,
+        loginStrategy,
+      })
+      const savedUser = await newUser.save()
+      if (savedUser) return { userAlreadyExists: false }
+      else throw new Error()
+    }
   } catch {
     throw new Error()
   }
@@ -59,7 +65,7 @@ type TryLoggingInReturnType = {
 }
 
 type TryLoggingInType = {
-  password: string
+  password: UserSchemaType['password']
   loginStrategy: UserSchemaType['loginStrategy']
   foundUser: UserSchemaType
 }
@@ -70,10 +76,10 @@ export const tryLoggingIn = async ({ password, loginStrategy, foundUser }: TryLo
     if (isPasswordMatch) {
       return { user: foundUser, message: undefined }
     } else {
-      return { message: 'wrongPassword', user: undefined }
+      return { user: undefined, message: WRONG_PASSWORD }
     }
   } else {
-    return { user: undefined, message: 'differentStrategy' }
+    return { user: undefined, message: USE_DIFFERENT_LOGIN_STRATEGY }
   }
 }
 
@@ -87,4 +93,11 @@ export const saveUser = async ({ user }: SaveUserType) => {
 
 export const generateTokenExpirationTime = () => {
   return Date.now() + 1000 * 60 * 60 // 1hr
+}
+
+export const failedLoginRedirect = (error: Error) => {
+  return `/?message=${error}`
+}
+export const successLoginRedirect = () => {
+  return '/'
 }
