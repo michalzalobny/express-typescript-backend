@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { bcryptGenerate } from './bcrypt'
 import { generateCryptoToken } from './crypto'
 import { WRONG_PASSWORD, USE_DIFFERENT_LOGIN_STRATEGY } from '../constants/userMessages'
+import { PASSWORD_TOKEN_EXPIRATION } from '../constants/numericals'
 
 export const deleteUserBy = async (where: Partial<UserSchemaType>): Promise<number> => {
   const { deletedCount } = await User.deleteOne(where)
@@ -92,7 +93,8 @@ export const saveUser = async ({ user }: SaveUserType) => {
 }
 
 export const generateTokenExpirationTime = () => {
-  return Date.now() + 1000 * 60 * 60 // 1hr
+  // return Date.now() + 1000 * 60 * 60 // 1hr
+  return Date.now() + Number(PASSWORD_TOKEN_EXPIRATION)
 }
 
 export const failedLoginRedirect = (error: Error) => {

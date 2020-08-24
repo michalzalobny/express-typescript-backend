@@ -16,6 +16,7 @@ import { getConfigVar } from './services/getConfigVar'
 import { db } from './config/database'
 import { usersRoute } from './routes/usersRoute'
 import { pageFormRoute } from './routes/pageFormRoute'
+import { APP_EXPIRATION_TIME } from './constants/numericals'
 
 const PORT = getConfigVar('NEXT_PUBLIC_APP_PORT_BACK')
 
@@ -55,7 +56,7 @@ app.use(
     rolling: true,
     store,
     cookie: {
-      maxAge: Number(getConfigVar('APP_EXPIRATION_TIME')),
+      maxAge: Number(APP_EXPIRATION_TIME),
       sameSite: 'lax',
       // secure:true
     },

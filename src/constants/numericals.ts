@@ -1,0 +1,2 @@
+export const PASSWORD_TOKEN_EXPIRATION = '3600000' //1hr
+export const APP_EXPIRATION_TIME = '259200000' //3 days

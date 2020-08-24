@@ -4,6 +4,7 @@ import { generateCryptoToken } from '../services/crypto'
 import type { RequestHandler } from 'express'
 import { USER_ALREADY_EXISTS } from '../constants/userMessages'
 import { PASSPORT_LOCAL, PASSPORT_FACEBOOK, PASSPORT_GOOGLE } from '../constants/passportStrategies'
+import { APP_EXPIRATION_TIME } from '../constants/numericals'
 import {
   findUserBy,
   createNewUser,
@@ -28,6 +29,7 @@ export const resetUserPassword: RequestHandler = async (req, res) => {
   try {
     const { token } = req.params
     const newPassword = req.body.resetUserEmailPasswordDataPassword
+
     const user = await findUserBy({ resetToken: token, resetTokenExpiration: { $gt: Date.now() } })
     if (user) {
       const hashedPassword = await bcryptGenerate({ hashObject: newPassword })
@@ -128,7 +130,7 @@ export const deleteUser: RequestHandler = async (req, res) => {
 }
 export const getUserCredentials: RequestHandler = (req, res, _next) => {
   if (req.user) {
-    res.status(200).json({ roles: req.user.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
+    res.status(200).json({ roles: req.user.roles, expiresIn: APP_EXPIRATION_TIME })
   } else {
     res.status(401).send()
   }

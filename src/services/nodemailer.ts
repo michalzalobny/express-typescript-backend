@@ -15,7 +15,8 @@ const transporter = nodemailer.createTransport(
     // secureConnection: true,
     port: 587,
     auth: {
-      user: getConfigVar('MAIL_USER'), // taken from Poczta > Nazwa domeny > Szczegóły > zmiana hasła > i dajemy to co tam jest z emailem + hasło nowe
+      //Poczta > Nazwa domeny > Szczegóły > zmiana hasła > i dajemy to co tam jest z emailem + hasło nowe
+      user: getConfigVar('MAIL_USER'),
       pass: getConfigVar('MAIL_PASSWORD'),
     },
   })
