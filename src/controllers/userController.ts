@@ -112,7 +112,7 @@ export const getAllUsers: RequestHandler = async (_req, res) => {
   try {
     const users = await findAllUsers()
     const usersToSend = users.map(({ name, email, roles, _id }) => ({ name, email, roles, _id }))
-    res.status(200).send(usersToSend)
+    res.status(200).json(usersToSend)
   } catch {
     res.status(400).send()
   }
@@ -128,7 +128,7 @@ export const deleteUser: RequestHandler = async (req, res) => {
 }
 export const getUserCredentials: RequestHandler = (req, res, _next) => {
   if (req.user) {
-    res.status(200).send({ roles: req.user.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
+    res.status(200).json({ roles: req.user.roles, expiresIn: getConfigVar('APP_EXPIRATION_TIME') })
   } else {
     res.status(401).send()
   }
