@@ -21,7 +21,7 @@ declare module 'passport' {
 const strategyOptions = {
   clientID: getConfigVar('GOOGLE_CLIENT_ID'),
   clientSecret: getConfigVar('GOOGLE_CLIENT_SECRET'),
-  callbackURL: `${getConfigVar('NEXT_PUBLIC_APP_PATH')}api/user/auth/google/callback`,
+  callbackURL: `${getConfigVar('NEXT_PUBLIC_APP_PATH')}api/users/auth/google/callback`,
 }
 
 export const googleStrategy = new GoogleStrategy(strategyOptions, async (_accessToken, _refreshToken, profile, done) => {

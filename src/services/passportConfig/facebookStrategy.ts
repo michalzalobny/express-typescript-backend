@@ -21,7 +21,7 @@ declare module 'passport' {
 const strategyOptions = {
   clientID: getConfigVar('FACEBOOK_CLIENT_ID'),
   clientSecret: getConfigVar('FACEBOOK_CLIENT_SECRET'),
-  callbackURL: `${getConfigVar('NEXT_PUBLIC_APP_PATH')}api/user/auth/facebook/callback`,
+  callbackURL: `${getConfigVar('NEXT_PUBLIC_APP_PATH')}api/users/auth/facebook/callback`,
   profileFields: ['id', 'emails', 'name'],
 }
 

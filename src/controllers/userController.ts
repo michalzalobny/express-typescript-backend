@@ -24,7 +24,7 @@ declare global {
   }
 }
 
-export const userPostResetEmailPassword: RequestHandler = async (req, res) => {
+export const resetUserPassword: RequestHandler = async (req, res) => {
   try {
     const { token } = req.params
     const newPassword = req.body.resetUserEmailPasswordDataPassword
@@ -44,7 +44,7 @@ export const userPostResetEmailPassword: RequestHandler = async (req, res) => {
   }
 }
 
-export const userPostResetPassword: RequestHandler = async (req, res) => {
+export const sendPasswordResetEmail: RequestHandler = async (req, res) => {
   try {
     const token = await generateCryptoToken()
     const user = await findUserBy({ email: req.body.resetUserPasswordDataEmail })
@@ -73,7 +73,7 @@ export const userPostResetPassword: RequestHandler = async (req, res) => {
   }
 }
 
-export const userUpdateRoles: RequestHandler = async (req, res) => {
+export const updateUserRoles: RequestHandler = async (req, res) => {
   try {
     const user = await findUserBy({ _id: req.params.id })
     if (user) {
@@ -108,7 +108,7 @@ export const registerUser: RequestHandler = async (req, res) => {
   }
 }
 
-export const userGetAllUsers: RequestHandler = async (_req, res) => {
+export const getAllUsers: RequestHandler = async (_req, res) => {
   try {
     const users = await findAllUsers()
     const usersToSend = users.map(({ name, email, roles, _id }) => ({ name, email, roles, _id }))
@@ -118,7 +118,7 @@ export const userGetAllUsers: RequestHandler = async (_req, res) => {
   }
 }
 
-export const userDeleteUser: RequestHandler = async (req, res) => {
+export const deleteUser: RequestHandler = async (req, res) => {
   try {
     await deleteUserBy({ _id: req.params.id })
     res.status(200).send()
@@ -169,7 +169,7 @@ export const userAuthFacebook: RequestHandler = (req, res, next) => {
   })(req, res, next)
 }
 
-export const userGetLogout: RequestHandler = (req, res) => {
+export const logoutUser: RequestHandler = (req, res) => {
   if (req.session) {
     req.session.destroy(() => {
       req.logout()

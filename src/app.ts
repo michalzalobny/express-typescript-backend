@@ -14,7 +14,7 @@ import { googleStrategy } from './services/passportConfig/googleStrategy'
 import User, { UserSchemaType } from './models/UserSchema'
 import { getConfigVar } from './services/getConfigVar'
 import { db } from './config/database'
-import { userRoute } from './routes/userRoute'
+import { usersRoute } from './routes/usersRoute'
 import { pageFormRoute } from './routes/pageFormRoute'
 
 const PORT = getConfigVar('NEXT_PUBLIC_APP_PORT_BACK')
@@ -80,7 +80,7 @@ passport.deserializeUser<UserSchemaType, string>(async (userId, done) => {
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.use('/api/user', userRoute)
+app.use('/api/users', usersRoute)
 app.use('/api/pageform', pageFormRoute)
 
 app.listen(PORT, () => console.log(`Server listening at :${PORT}`))
