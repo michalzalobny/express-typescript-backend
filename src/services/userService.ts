@@ -39,7 +39,7 @@ export const createNewUser = async ({ name, email, password, userRoles, loginStr
   try {
     const foundUser = await findUserBy({ email })
     if (foundUser) {
-      return { userAlreadyExists: true }
+      return foundUser
     } else {
       const id = await generateCryptoToken()
       const hashedPassword = await bcryptGenerate({ hashObject: password })
@@ -52,7 +52,7 @@ export const createNewUser = async ({ name, email, password, userRoles, loginStr
         loginStrategy,
       })
       const savedUser = await newUser.save()
-      if (savedUser) return { userAlreadyExists: false }
+      if (savedUser) return savedUser
       else throw new Error()
     }
   } catch {

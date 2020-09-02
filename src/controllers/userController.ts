@@ -93,14 +93,14 @@ export const updateUserRoles: RequestHandler = async (req, res) => {
 export const registerUser: RequestHandler = async (req, res) => {
   try {
     const { name, email, password } = req.body
-    const { userAlreadyExists } = await createNewUser({
+    const createdUser = await createNewUser({
       name,
       email,
       password,
       userRoles: ['user', 'admin'],
       loginStrategy: PASSPORT_LOCAL,
     })
-    if (!userAlreadyExists) {
+    if (createdUser) {
       res.status(200).send()
     } else {
       res.status(400).json({ message: USER_ALREADY_EXISTS })
